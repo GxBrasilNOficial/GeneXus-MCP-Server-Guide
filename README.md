@@ -1,4 +1,4 @@
-# GeneXus MCP Server
+# GeneXus MCP Server Guide
 
 Este repositório reúne o conhecimento sobre o uso do `GeneXus MCP Server`, com foco no que já foi confirmado e no que ainda falta validar.
 
