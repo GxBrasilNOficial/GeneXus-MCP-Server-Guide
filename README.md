@@ -1,4 +1,4 @@
-# GeneXus MCP Server
+# GeneXus MCP Server Guide
 
 Este repositório reúne o conhecimento sobre o uso do `GeneXus MCP Server`, com foco no que já foi confirmado e no que ainda falta validar.
 
@@ -21,7 +21,7 @@ Este material parte do cenário `Windows Native`, foco do guia oficial de instal
 
 Este repositório fica como base de conhecimento sobre o `GeneXus MCP Server`.
 
-Há um workspace local separado para testes e artefatos de estudo.
+Há um workspace local separado para testes e artefatos de estudo, em `C:\Dev\Test`.
 
 Este documento registra o estado atual do que já entendemos e o que ainda falta confirmar.
 
@@ -51,6 +51,10 @@ O servidor fica na pasta `bl` da instalação do `GeneXus Next`.
 
 O executável confirmado é `GeneXus.Services.Host.exe`.
 
+Na instalação validada nesta máquina, o caminho absoluto do host é:
+
+`C:\Users\ANTONIOJOSE\AppData\Local\Programs\GeneXus\GeneXus Next\bl\GeneXus.Services.Host.exe`
+
 ## Arquivos de apoio
 
 Com base no guia oficial, os arquivos locais mais relevantes para acompanhamento são:
@@ -72,8 +76,6 @@ Pelo guia oficial, existem dois modos úteis:
 - iniciar a IDE, o que sobe o servidor automaticamente junto com ela
 - iniciar apenas o backend local, executando `GeneXus.Services.Host.exe` a partir da pasta `bl`
 
-Mais tarde, isso pode virar um atalho ou fluxo direto para abrir só o servidor.
-
 ### Fluxo operacional recomendado
 
 1. Abrir a instalação do `GeneXus Next`.
@@ -81,11 +83,28 @@ Mais tarde, isso pode virar um atalho ou fluxo direto para abrir só o servidor.
 3. Executar `GeneXus.Services.Host.exe`.
 4. Confirmar que o servidor respondeu no endpoint padrão.
 
-### Atalho no desktop
+### Atalhos locais validados
 
-Como a intenção é poder usar o servidor com ou sem a IDE, faz sentido considerar um atalho no desktop que aponte diretamente para `GeneXus.Services.Host.exe`.
+Nesta máquina já existem atalhos no menu Iniciar para subir apenas o host:
 
-Esse atalho pode servir como entrada rápida para iniciar apenas o backend local, sem passar pela interface do `GeneXus Next`.
+- `GENEXUS MCP`, para abrir o host normalmente
+- `GENEXUS MCP MIN`, para abrir o host minimizado
+
+Esses atalhos aparecem na busca do Windows e apontam para `GeneXus.Services.Host.exe`.
+
+### Comportamento esperado ao iniciar
+
+Ao abrir o host por atalho ou executando o `.exe` diretamente, é esperado que apareça uma janela de terminal.
+
+Os sinais relevantes de inicialização correta são:
+
+- `GeneXus Services Host started. port:8001`
+- `Now listening on: http://localhost:8001`
+- `Application started. Press Ctrl+C to shut down.`
+
+Também é normal que a janela mostre logs de carregamento de pacotes e mensagens `404` em endpoints auxiliares de OAuth discovery.
+
+A janela precisa permanecer aberta enquanto o servidor estiver em uso.
 
 ## Como validar se está ativo
 
@@ -114,6 +133,10 @@ Na validação realizada:
 
 Isso confirma que o servidor está funcional como MCP, e não apenas escutando a porta.
 
+Ao trabalhar com `Knowledge Bases`, é importante considerar que a KB aberta fica associada à sessão MCP que executou o `open_knowledge_base`.
+
+Na prática, isso significa que abrir a KB em uma sessão não garante que outra sessão MCP já enxergue o mesmo estado aberto.
+
 ## Como registrar no Codex Windows
 
 O Codex local suporta MCP servers externos no arquivo de configuração do usuário. O registro deste servidor usa o alias `gxnext`.
@@ -133,11 +156,17 @@ Fluxo mínimo para trabalhar com o `GeneXus MCP Server`:
 
 Se o `initialize` falhar com `406`, o problema costuma ser o `Accept` da requisição e não necessariamente o servidor desligado.
 
+Em operações de listagem, `export_kb_to_text` com `listOnly:true` pode concluir com sucesso sem devolver a lista de objetos no payload MCP.
+
+Quando for necessário obter a listagem real de objetos, pode ser necessário exportar da KB para o filesystem de trabalho e ler os artefatos gerados.
+
 ## Estado atual
 
 - O `GeneXus MCP Server` pode responder em `http://localhost:8001/mcp`
 - O host local é `GeneXus.Services.Host.exe`
+- o caminho absoluto validado do host nesta máquina é `C:\Users\ANTONIOJOSE\AppData\Local\Programs\GeneXus\GeneXus Next\bl\GeneXus.Services.Host.exe`
 - O servidor pode ser iniciado sem abrir a IDE
+- há atalhos locais para abertura normal e minimizada do host
 - O log relevante é `GXMBLServices.log`
 - `settings.json` e `settings-overrides.json` fazem parte do apoio local
 
@@ -158,5 +187,4 @@ Se o `initialize` falhar com `406`, o problema costuma ser o `Accept` da requisi
 
 Os próximos apontamentos desta pasta devem ampliar esta base com:
 
-- um atalho local para iniciar apenas o `GeneXus MCP Server`
 - quais comandos e fluxos de uso foram testados localmente
