@@ -174,17 +174,63 @@ Quando for necessário obter a listagem real de objetos, pode ser necessário ex
 
 `Arquivo Textual de Objeto Genexus` significa um arquivo `.gx` que representa textualmente um objeto GeneXus e que pode servir como fonte para leitura, estudo, exportação ou importação no fluxo MCP.
 
+## Workspace de testes
+
+O workspace local para artefatos gerados e exportados é `C:\Dev\Test\NextTest1`. Essa é a pasta oficial de `currentDirectory` para todas as operações MCP com a KB `NextTest1`.
+
+Estrutura interna:
+
+| Subpasta | Uso |
+|---|---|
+| `ExportadosPeloGenexusMCP\` | Exports feitos via MCP — `Textual` (src/src.ns) e estrutura física |
+| `ProntosParaImportacao\` | Objetos validados prontos para `import_text_to_kb` |
+| `RascunhosGerados\` | Rascunhos ainda não validados |
+| `Exemplos\` | Exemplos de referência |
+| `Verify-*\` | Pastas de verificação por objeto |
+
+## Fluxo de build validado
+
+O fluxo completo validado para uma KB com `Transaction` nova é:
+
+1. `open_knowledge_base` com `currentDirectory` apontando para o workspace de testes
+2. `import_text_to_kb` com os arquivos `.gx` prontos
+3. `build_all` — requer `prefer-offline=true` e `audit=false` no `~/.npmrc`
+4. Verificar se o banco de aplicação já existe no LocalDB antes de qualquer operação de banco
+5. `create_or_impact_database` com `isCreate: false` se banco existir com dados, `isCreate: true` se não existir
+6. Subir a aplicação via `dotnet GxNetCoreStartup.dll` na pasta `NetModel\web\bin`
+
+## `npm install` travando o build
+
+O `build_all` chama `npm install` para os UserControls do GeneXusUnanimo. Sem configuração adequada, esse processo trava indefinidamente.
+
+Solução validada: adicionar ao `~/.npmrc`:
+
+```
+prefer-offline=true
+```
+
+> **Em avaliação:** `audit=false` também resolve, mas desativa verificações de segurança globalmente. Ainda não confirmado se `prefer-offline=true` sozinho é suficiente — validar no próximo build.
+
 ## Pontos em aberto
 
-- O formato textual exato que o GeneXus aceita para exportar e importar um `WebPanel` sem perder o conteúdo visual
-- Como fazer o round-trip entre os arquivos textuais exportados e a KB de forma confiável
-- Qual é a serialização oficial esperada para um `WebPanel` simples com texto visível
-- Como produzir um exemplo mínimo que volte da KB com `Start` e `TextBlock` preservados
-- Se a pasta `Examples` deve ficar só para exemplos já validados
-- Quando vale a pena separar mais os artefatos do workspace de testes
+- A ferramenta `run` do MCP não está funcional nesta versão — declarada no schema mas não implementada. Ver `mcp-tools.md` para detalhes e alternativa.
+- Confirmar se `prefer-offline=true` sozinho no `~/.npmrc` é suficiente para evitar o hang do `npm install` no `build_all` (em observação no próximo build)
+- `Procedure` nova via MCP — `PrcSaudacao` foi importada com sucesso e está na KB, mas não gerou `.dll` durante o `build_all`. Possível timing issue (build rodou antes da spec processar o novo objeto) ou bug real. Requer novo `build_all` para validar se compila na próxima execução.
 
-## Próximos registros
+## Validações concluídas
 
-Os próximos apontamentos desta pasta devem ampliar esta base com:
-
-- quais comandos e fluxos de uso foram testados localmente
+- Round-trip de `WebPanel` via MCP: export → edição do `.layout.xml` → import → build → resultado visível no browser ✅
+- `textblock` no layout requer `controlName` além de `name` — sem ele o import falha ✅
+- Encerrar o web app antes de buildar — processo segura `.dll` em `NetModel\web\bin\` ✅
+- `Folder` é tipo de objeto GeneXus criável via `import_text_to_kb` com arquivo de corpo vazio ✅
+- Mover objetos entre pastas via MCP não funciona — nem via `Folder` em `#Properties`, nem via subdiretório; exclusivo da IDE ✅
+- MCP não tem `delete_object` — objetos importados não podem ser removidos via MCP ✅
+- `WorkWith` e `WorkWithDevices` — exportáveis via MCP, mas **não reimportáveis**: o validador rejeita tabs no YAML mesmo em arquivos gerados pelo próprio GeneXus; criação e edição exclusivas da IDE ✅
+- `BusinessComponent = true` em `#Properties` exige minúsculo (TOML) — `True` maiúsculo causa erro de parsing ✅
+- `&bc.Load(Key)` requer o PK como parâmetro — `Load()` sem parâmetro não é aceito pelo validador ✅
+- Round-trip de objetos gerados pelo WorkWithWeb (`WWxxx`, `ViewXxx`, `XxxGeneral`) — são `WebPanel`/`WebComponent` comuns e suportam o fluxo padrão: export → edição do `.layout.xml` → validate → import → build → visível no browser ✅
+- Round-trip de código `.main.gx` (não só layout) — editar eventos/rules em WebPanel funciona: `Form.Caption` alterado no Event Start, importado, compilado, mudança refletida no browser ✅
+- `execute.xml` pode ficar bloqueado após `build_all`: o GeneXus reporta falha geral, mas o passo `dotnet publish` já ocorreu e os DLLs em `bin\` estão atualizados — a aplicação serve as mudanças corretamente ✅
+- Daemons GeneXus (`SpecifierDaemon`, `GeneratorDaemon`, `ResidentBuilderDaemon`) ficam órfãos após fechar a IDE e travam builds via MCP; solução: listar com `Get-WmiObject Win32_Process` e matar os PIDs com `Stop-Process -Force` antes do próximo build ✅
+- `WebPanel` novo criado do zero via MCP — arquivo `.webpanel.main.gx` com mínimo de eventos/variables compila e gera DLL funcional ✅
+- `build_one` e `compile_object` — **não funcionam** nesta versão do GeneXus; ambas retornam "Erro interno" sem detalhes; use `build_all` como alternativa ❌
