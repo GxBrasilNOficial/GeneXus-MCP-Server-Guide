@@ -1,0 +1,9 @@
+Transaction Produto
+{
+    ProdutoCodigo* [ DataType = 'VarChar(12)' ]
+    ProdutoDescricao! [ DataType = 'VarChar(100)' ]
+
+    #Properties
+        Name = "Produto"
+    #End
+}

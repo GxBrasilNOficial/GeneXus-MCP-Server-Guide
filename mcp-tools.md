@@ -90,6 +90,14 @@ Os parâmetros `knowledgeBaseName` e `directory` ficam **dentro** do objeto `req
 
 O mesmo padrão de `request` aninhado vale para todas as ferramentas GeneXus MCP.
 
+### 5.1. Observações de ambiente ao abrir a KB
+
+- O `currentDirectory` deve existir antes de chamar `open_knowledge_base`. Se ele não existir, a chamada pode falhar ou causar comportamento imprevisível.
+- Se a pasta `src` já existe em `currentDirectory`, o servidor pode pular o export automático e apenas abrir a KB. Isso é útil, mas também significa que a chamada pode retornar "Export skipped" em vez de regravar arquivos.
+- Em scripts locais, prefira usar `python3` em vez de `python`, pois o `python` do sistema pode apontar para Python 2 e quebrar o script.
+- Quando a resposta MCP chega em formato SSE, ela pode vir com prefixos `event:` e `data:`. Para parsear corretamente, extraia as linhas `data:` e então converta o JSON resultante.
+- A saída de console no Windows pode falhar ao imprimir caracteres como `✓` se o terminal usar encoding CP1252. Em scripts Python, use `ensure_ascii=True` ao imprimir JSON ou force UTF-8 no output.
+
 ### 6. `npm install` trava o `build_all` — solução via `.npmrc`
 
 Durante o `build_all`, o GeneXus chama `npm install` para os UserControls (GeneXusUnanimo). Esse processo trava indefinidamente quando o npm tenta verificar o registry ou rodar `npm audit`.

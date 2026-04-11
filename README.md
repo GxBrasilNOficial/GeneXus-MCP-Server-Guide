@@ -124,6 +124,7 @@ Também faz sentido observar o `GXMBLServices.log`, porque ele registra a execu�
 ### Validação MCP real
 
 O endpoint não responde a um `GET` simples. Ele espera um cliente MCP com `Accept: application/json, text/event-stream`.
+Ao usar scripts, cuidado: a resposta pode chegar em SSE com prefixos `event:` e `data:`. Extraia as linhas `data:` e parseie o JSON contido nelas.
 
 Na validação realizada:
 
@@ -153,6 +154,8 @@ Fluxo mínimo para trabalhar com o `GeneXus MCP Server`:
 2. Confirmar que a porta `8001` está aberta.
 3. Confirmar o handshake MCP com `initialize`.
 4. Usar o servidor no Codex como `gxnext`.
+
+> Dica de ambiente: em scripts locais no Windows, use `python3` sempre que disponível. O comando `python` pode apontar para Python 2 e causar erros de sintaxe ou encoding.
 
 Se o `initialize` falhar com `406`, o problema costuma ser o `Accept` da requisição e não necessariamente o servidor desligado.
 
